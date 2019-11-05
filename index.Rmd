@@ -4,10 +4,10 @@ author: "katherine_powelson@fws.gov"
 date: "11/5/2019"
 output: html_document
 ---
-
+[occurence data](occurencedatabases.html)
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-[occurence data](occurencedatabases.html)
+
 ```
 
 ## R Markdown
