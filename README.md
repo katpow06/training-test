@@ -9,4 +9,8 @@ __Bold__
 
 To link git and and R you take the url from git and use it to make a new R project 
 
+
 other notes - pg
+
+ Kat is read me
+pg disagrees
