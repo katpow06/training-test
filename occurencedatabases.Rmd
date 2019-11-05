@@ -1,13 +1,21 @@
 ---
-title: "my manuscript page"
+title: "NCEAS-Training"
 author: "katherine_powelson@fws.gov"
 date: "11/5/2019"
-output: html_document
+output:
+  html_document:
+    df_print: paged
 ---
-
+#Loading packages and data sets
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-[occurence data](occurencedatabases.html)
+cnddb <- read.csv("cnddb.csv")
+OR_nat_heritage <- read.csv("OregonNaturalHeritage.csv")
+
+```
+
+```{r}
+head(cnddb)
+head(OR_nat_heritage)
 ```
 
 ## R Markdown
