@@ -4,9 +4,16 @@ author: "katherine_powelson@fws.gov"
 date: "11/5/2019"
 output: word_document
 ---
-
+#Loading packages and data sets
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+cnddb <- read.csv("cnddb.csv")
+OR_nat_heritage <- read.csv("OregonNaturalHeritage.csv")
+
+```
+
+```{r}
+head(cnddb)
+head(OR_nat_heritage)
 ```
 
 ## R Markdown
