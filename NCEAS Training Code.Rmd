@@ -2,7 +2,9 @@
 title: "NCEAS-Training"
 author: "katherine_powelson@fws.gov"
 date: "11/5/2019"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 #Loading packages and data sets
 ```{r setup, include=FALSE}
