@@ -1,10 +1,12 @@
 ---
-title: "Observation Database Merging and Summary"
+title: "EO Database Merging and Summary"
 author: "katherine_powelson@fws.gov"
 date: "11/5/2019"
 output: html_document
 ---
 
  * [Wrangling CNDDB and Natural Heritage Datasets](occurencedatabases.html)
- * summarizing occurence data 
- * 
+ * Summarizing occurence data 
+   * Occurences by county 
+   * Occurences overtime
+ * Generating a list of public land owners with occurences
