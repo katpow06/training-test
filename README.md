@@ -6,3 +6,6 @@ These are the demo files form the NCEAS tutorial
  - other files 
 
 __Bold__
+
+To link git and and R you take the url from git and use it to make a new R project 
+
