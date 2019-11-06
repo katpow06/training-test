@@ -10,7 +10,6 @@ output:
 ```{r setup, include=FALSE}
 cnddb <- read.csv("cnddb.csv")
 OR_nat_heritage <- read.csv("OregonNaturalHeritage.csv")
-
 ```
 
 ```{r}
