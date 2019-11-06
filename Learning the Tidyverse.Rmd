@@ -126,7 +126,7 @@ region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/
 
 
 ```{r}
-catch_joined <- left_join(catch_long, region_defs)# it is trying go guess what to join by but it can't because they are named differently 
+#catch_joined <- left_join(catch_long, region_defs)# it is trying go guess what to join by but it can't because they are named differently 
 ```
 
  two solutions either specify what to join by
