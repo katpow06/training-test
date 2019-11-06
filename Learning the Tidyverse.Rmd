@@ -1,0 +1,166 @@
+---
+title: "Learning the Tidyverse"
+author: "katherine_powelson@fws.gov"
+date: "11/6/2019"
+output: html_document
+---
+Primary key is something that does not repeat, a foreign key repeat. Something could be a primary key in one table and a foreign key in another table. 
+git remove -v in terminal can make sure that you are in the right folder/place
+
+ctrl+sft+m makes a pipe  it takes the output from a output and uses it for the input of the next . Pipe is like the work then
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=F, message=F}
+library(dplyr)
+library(tidyr)
+#package_name::function_name(...) you can uses this to unmask functions  
+```
+# Read and clean data 
+```{r}
+catch_orginal <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1",method="libcurl"),stringsAsFactors = F)
+
+head(catch_orginal)
+```
+
+
+# Reshape our data 
+ We are going to drop the notes and the all colum. For Tidyverse .data is always the first argument, it automatically populates with the product of previous function
+```{r}
+
+
+catch_data <- catch_orginal %>% 
+  #select(Region, Year,Chinook,Sockeye,Coho,Pink,Chum)#select function chooses and then renames colums from a table.This tells what to keep. 
+  select(-All, -notesRegCode)# this way tells you which colums to get rid of 
+head(catch_data)
+```
+Chinook is a chr now we need to mutate it 
+```{r}
+catch_clean <-catch_data %>% 
+  mutate(Chinook = as.numeric(Chinook))
+
+summary(catch_clean)
+```
+Now we will find the rows that got turned into NA my the mutate function 
+```{r}
+(i<-which(is.na(catch_clean$Chinook)))
+```
+lets print from catch_orginal the [] let you look at a colum by index number 
+```{r}
+catch_orginal[i,]
+```
+Now lets fix this with out mutate
+```{r}
+catch_clean <-catch_data %>% 
+  mutate(Chinook = ifelse(Chinook=="I",1,Chinook)) %>% 
+  mutate(Chinook=as.numeric(Chinook))
+summary(catch_clean)
+
+```
+# Reshape our data 
+Pivot longer 
+```{r}
+catch_long <- catch_clean %>% 
+  pivot_longer(cols = -c(Region,Year),# just like above you can you all c() or -c()
+  names_to="species",# the name for the pivot value
+  values_to= "count")
+```
+This is the opposite of pivot longer, pivot wider. This is needed for making tables and stuff 
+```{r}
+catch_wide <- catch_long %>%
+  pivot_wider(names_from= Year, #makes a colum for each year
+              values_from = count)
+
+catch_long <-  catch_long %>% 
+  rename(catch_thousands =count)
+
+head(catch_long)  
+
+```
+```{r}
+catch_long <- catch_long %>% 
+  mutate(catch = catch_thousands*1000) %>% 
+  select(-catch_thousands)
+head(catch_long)
+```
+
+# Summarize data
+This summarizes by similar values
+```{r}
+mean_region <- catch_long %>% 
+  group_by(Region, species) %>% #group by
+  summarize(catch_mean=mean(catch),#tell it what to do with each group
+            num_obs=n())# this tells you the number of observations 
+mean_region
+
+catch_by_spp <- catch_long %>% 
+  group_by(species) %>% 
+  summarize(total_catch=sum(catch)) %>% 
+  arrange(desc(total_catch))#arrangeing the values
+
+catch_by_spp
+```
+
+filter 
+
+```{r}
+catch_by_spp_pre1900 <- catch_long %>% 
+  filter(Year<1990) %>% 
+  group_by(species) %>% 
+  summarize(total_catch=sum(catch)) %>% 
+  arrange(desc(total_catch))
+  
+catch_by_spp_pre1900
+```
+
+# Joins to region table 
+## Adding colum that will be joined 
+```{r}
+region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1",
+                            method="libcurl"),
+                        stringsAsFactors = F) %>% 
+  select(code, mgmtArea)# the columns that we need
+
+```
+
+
+```{r}
+catch_joined <- left_join(catch_long, region_defs)# it is trying go guess what to join by but it can't because they are named differently 
+```
+
+ two solutions either specify what to join by
+```{r}
+catch_joined <- left_join(catch_long, region_defs, by= c("Region"="code")) 
+
+```
+or  rename it when you are bring it in 
+
+# Seperate and Unite
+```{r}
+site_codes <- data.frame(site = c("HAW-100",
+                                  "HAW-101",
+                                  "OAH-102",
+                                  "MAI-100"),
+                         stringsAsFactors = F)
+```
+seperate Island and site number 
+
+```{r}
+site_codes_split <- site_codes %>% 
+  separate(site, into =c("island","site_number"), sep="-")# this is the orginal colum "site" and the name for the new colums 
+site_codes_split
+```
+gsub package will look for a pattern instead of the symbol 
+
+Now we will recombine them 
+
+```{r}
+united <- site_codes_split %>% 
+  unite(col= site_code, island, site_number, sep="_")
+
+united
+```
+
+
+
