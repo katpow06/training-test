@@ -1,0 +1,19 @@
+---
+title: "Starting_a_new_package"
+author: "katherine_powelson@fws.gov"
+date: "11/6/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(devtools)
+library(usethis)
+library(roxygen2)
+
+```
+
