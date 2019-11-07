@@ -1,0 +1,139 @@
+---
+title: "data_visualization"
+author: "katherine_powelson@fws.gov"
+date: "11/7/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=F, warning=F}
+library(ggplot2)
+library(leaflet)
+library(dplyr)
+library(tidyr)
+library(scales)
+library(DT)
+library(lubridate)
+```
+
+# Prepare data
+Try catch trys to read the error and then if doesn't work it gives you an alternate. 
+This is good because if you are sharing code it will look for the file locally 
+```{r}
+#data_url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e"
+
+esc <- tryCatch(
+    read.csv("data/escapement.csv", stringsAsFactors = FALSE),
+    error=function(cond) {
+        message(paste("Escapement file does not seem to exist, so get it from the KNB."))
+        esc <- read.csv(url(data_url, method = "libcurl"), stringsAsFactors = FALSE)
+        #add an if the folder doesn't exist make it 
+        return(esc)
+    }
+)
+
+head(esc)
+```
+
+Calculate the Annual escapment by speceis, region, and Year 
+  *only for Sockeye, Chinook, Coho, Pink, Chum 
+  
+```{r}
+
+salmon_data <- esc %>% 
+  filter(Species %in% c("Sockeye","Chinook", "Coho")) %>% 
+  mutate(sampleDate= as.Date(sampleDate))%>% 
+  mutate(Year=year(sampleDate)) %>% 
+  group_by(Species,SASAP.Region,Year) %>% 
+  summarize(totalesc=sum(DailyCount))
+
+# without lubridate 
+salmon_data <- esc %>% 
+  filter(Species %in% c("Sockeye","Chinook", "Coho","Pink","Chum")) %>% ## you can us == in 
+  separate(sampleDate, into = c("Year", "Month", "Day")) %>% 
+  mutate(Year=as.numeric(Year)) %>% 
+  group_by(Species,SASAP.Region,Year) %>% 
+  summarize(total_esc=sum(DailyCount))
+
+head(salmon_data)
+```
+
+# Create static plots 
+
+```{r}
+ggplot(salmon_data,aes(x=Species, y=total_esc, fill=SASAP.Region))+
+  geom_col()
+
+```
+```{r}
+kodiak_esc <- salmon_data %>% 
+  filter(SASAP.Region=="Kodiak")
+
+my_theme <- theme_bw()+
+  theme(legend.position = "bottom")
+pal <- c("blue", "green", "khaki", "gray", "yellow")
+ggplot(kodiak_esc,aes(x=Year, y=total_esc,color=Species))+
+  geom_line()+
+  geom_point()+
+  scale_color_manual(values=pal)+
+  scale_y_continuous(labels = comma)+
+  theme_bw()+ # call default theme before other theme edits
+  theme(legend.position = "bottom")
+
+```
+
+
+# Create an interactive table 
+
+# Create and interactive map
+
+```{r, fig.height=7, fig.width=7}
+ggplot(salmon_data, aes(x=Year, y=total_esc, color=Species))+
+  geom_line()+
+  geom_point()+
+  facet_wrap(~SASAP.Region, ncol=2, scales = "free")+
+  scale_y_continuous(labels = comma)
+  
+```
+
+
+```{r}
+locations <- esc %>% 
+  distinct(Location, Latitude,Longitude) %>% #pulls out distinct combinatiosn
+  drop_na()
+
+datatable(locations)
+```
+#Leaflet
+leaflet uses pipes instead of the leaflet is WGS84
+```{r}
+leaflet(locations) %>% 
+  addTiles() %>% #add the default tiles(basemap)
+  addMarkers(lng=~Longitude, lat = ~Latitude, popup=~Location)
+  
+```
+
+```{r}
+leaflet(locations) %>% 
+  addWMSTiles("https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?",
+              layers = 'GEBCO_LATEST',
+              attribution = "Imagery reproduced from the GEBCO_2014 Grid, version 20150318, www.gebco.net") %>%
+  addCircleMarkers(lng = ~Longitude,
+                   lat = ~Latitude,
+                   popup = ~ Location,
+                   radius = 5,
+                   # set fill properties
+                   fillColor = "salmon",
+                   fillOpacity = 1,
+                   # set stroke properties
+                   stroke = T,
+                   weight = 0.5,
+                   color = "white",
+                   opacity = 1)
+```
+
+
+
