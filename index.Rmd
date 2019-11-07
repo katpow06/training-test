@@ -11,6 +11,8 @@ output: html_document
    * Occurences overtime
  * Generating a list of public land owners with occurences
  * Trying something new 
+ * [Data Vis](visualizing_data.html)
+ 
 
 # Pascale's comment
 
